@@ -1,5 +1,6 @@
 import ARKit
 import GLTFSceneKit
+import GLTFKit2
 
 func createNode(_ geometry: SCNGeometry?, fromDict dict: [String: Any], forDevice device: MTLDevice?, channel: FlutterMethodChannel) -> SCNNode {
     let dartType = dict["dartType"] as! String
@@ -52,24 +53,51 @@ private func createGltfNode(_ dict: [String: Any], channel: FlutterMethodChannel
     if urlLowercased.hasSuffix(".gltf") || urlLowercased.hasSuffix(".glb") {
         let assetTypeIndex = dict["assetType"] as? Int
         let isFromFlutterAssets = assetTypeIndex == 0
-        let sceneSource: GLTFSceneSource
 
         do {
+            let filePath: String
             if isFromFlutterAssets {
-                // load model from Flutter assets
                 let modelPath = FlutterDartProject.lookupKey(forAsset: url)
-                sceneSource = try GLTFSceneSource(named: modelPath)
+                filePath = Bundle.main.path(forResource: modelPath, ofType: nil)!
             } else {
-                // load model from the Documents folder
                 let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
                 let documentsDirectory = paths[0]
-                let modelPath = documentsDirectory.appendingPathComponent(url).path
-                sceneSource = try GLTFSceneSource(path: modelPath)
+                filePath = documentsDirectory.appendingPathComponent(url).path
             }
-            let scene = try sceneSource.scene()
 
-            for child in scene.rootNode.childNodes {
-                node.addChildNode(child.flattenedClone())
+            // Set the Draco decompressor class
+            //GLTFAsset.dracoDecompressorClassName = NSStringFromClass(MyDracoDecompressor.self)
+            GLTFAsset.load(with: URL(fileURLWithPath: filePath), options: [:]) { (progress, status, maybeAsset, maybeError, _) in
+                if let error = maybeError {
+                    logPluginError("Failed to load file: \(error.localizedDescription)", toChannel: channel)
+                    return
+                }
+
+                guard let asset = maybeAsset else {
+                    logPluginError("Failed to load asset", toChannel: channel)
+                    return
+                }
+
+                let source = GLTFSCNSceneSource(asset: asset)
+                var animations = [GLTFSCNAnimation]()
+                animations = source.animations
+                NSLog("Animations count: \(animations.count)")
+                NSLog("Animations: \(animations.debugDescription)")
+
+                let scene = SCNScene(gltfAsset: asset)
+                for child in scene.rootNode.childNodes {
+                    node.addChildNode(child.flattenedClone())
+                }
+
+                // Add animations to each child node
+                for child in node.childNodes {
+                    if let defaultAnimation = animations.first {
+                        defaultAnimation.animationPlayer.animation.usesSceneTimeBase = false
+                        defaultAnimation.animationPlayer.animation.repeatCount = .greatestFiniteMagnitude
+                        child.addAnimationPlayer(defaultAnimation.animationPlayer, forKey: nil)
+                        defaultAnimation.animationPlayer.play()
+                    }
+                }
             }
 
             if let name = dict["name"] as? String {
@@ -78,6 +106,7 @@ private func createGltfNode(_ dict: [String: Any], channel: FlutterMethodChannel
             if let transform = dict["transform"] as? [NSNumber] {
                 node.transform = deserializeMatrix4(transform)
             }
+
         } catch {
             logPluginError("Failed to load file: \(error.localizedDescription)", toChannel: channel)
         }
