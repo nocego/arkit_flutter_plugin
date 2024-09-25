@@ -6,6 +6,7 @@ import 'package:arkit_plugin/src/utils/matrix4_ext.dart';
 import 'package:flutter/widgets.dart';
 import 'package:arkit_plugin/src/utils/random_string.dart' as random_string;
 import 'package:vector_math/vector_math_64.dart';
+import 'package:vector_math/vector_math_64.dart' as vector;
 
 /// ARKitNode is the model class for node-tree objects.
 /// It encapsulates the position, rotations, and other transforms of a node, which define a coordinate system.
@@ -117,4 +118,8 @@ class ARKitNode {
         'renderingOrder': renderingOrder,
         'isHidden': _boolValueNotifierConverter.toJson(isHidden),
       }..removeWhere((String k, dynamic v) => v == null);
+
+  void setFromRotation(vector.Quaternion rotation) {
+    transform = Matrix4.compose(position, rotation, scale);
+  }
 }
