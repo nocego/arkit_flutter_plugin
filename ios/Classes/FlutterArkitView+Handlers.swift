@@ -2,6 +2,7 @@ import ARKit
 
 extension FlutterArkitView {
     func onAddNode(_ arguments: [String: Any]) {
+    /*
         let geometryArguments = arguments["geometry"] as? [String: Any]
         let geometry = createGeometry(geometryArguments, withDevice: sceneView.device)
         let node = createNode(geometry, fromDict: arguments, forDevice: sceneView.device, channel: channel)
@@ -11,6 +12,7 @@ extension FlutterArkitView {
         } else {
             sceneView.scene.rootNode.addChildNode(node)
         }
+     */
     }
 
     func onUpdateNode(_ arguments: [String: Any]) {

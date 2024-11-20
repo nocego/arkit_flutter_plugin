@@ -14,7 +14,12 @@ class ARKitGltfNode extends ARKitNode {
     super.name,
     super.renderingOrder,
     super.isHidden,
-  });
+    double? relativePositionX,
+    double? relativePositionY,
+    double? relativePositionZ,
+  })  : relativePositionX = relativePositionX ?? 0,
+        relativePositionY = relativePositionY ?? 0,
+        relativePositionZ = relativePositionZ ?? 0;
 
   /// Path to the asset.
   final String url;
@@ -22,9 +27,23 @@ class ARKitGltfNode extends ARKitNode {
   /// Describes the location of the asset.
   final AssetType assetType;
 
+  /// relative positioning of the node in the x-axis
+  final double relativePositionX;
+
+  /// relative positioning of the node in the y-axis
+  final double relativePositionY;
+
+  /// relative positioning of the node in the z-axis
+  final double relativePositionZ;
+
   @override
   Map<String, dynamic> toMap() => <String, dynamic>{
         'url': url,
         'assetType': assetType.index
       }..addAll(super.toMap());
+
+  String toJsonString() {
+    // transform fehlt noch
+    return '{"assetType": ${assetType.index}, "name": "${super.name}", "renderingOrder": ${super.renderingOrder}, "url": "$url", "isHidden": 0, "dartType": "ARKitGltfNode", "relativePositionX": $relativePositionX, "relativePositionY": $relativePositionY, "relativePositionZ": $relativePositionZ}';
+  }
 }

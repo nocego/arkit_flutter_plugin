@@ -30,6 +30,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import '../arkit_gltf_node.dart';
+
 typedef ARKitPluginCreatedCallback = void Function(ARKitController controller);
 typedef StringResultHandler = void Function(String? text);
 typedef AnchorEventHandler = void Function(ARKitAnchor anchor);
@@ -66,6 +68,7 @@ class ARKitSceneView extends StatefulWidget {
     this.worldAlignment = ARWorldAlignment.gravity,
     this.maximumNumberOfTrackedImages = 0,
     this.debug = false,
+    this.modelsConfig,
   });
 
   /// This function will be fired when ARKit view is created.
@@ -162,6 +165,8 @@ class ARKitSceneView extends StatefulWidget {
   /// The default is false;
   final bool debug;
 
+  final Map<String, ARKitGltfNode>? modelsConfig;
+
   @override
   State<ARKitSceneView> createState() => _ARKitSceneViewState();
 }
@@ -202,6 +207,7 @@ class _ARKitSceneViewState extends State<ARKitSceneView> {
       widget.forceUserTapOnCenter,
       widget.maximumNumberOfTrackedImages,
       widget.debug,
+      widget.modelsConfig,
     ));
   }
 }
@@ -232,6 +238,7 @@ class ARKitController {
     bool forceUserTapOnCenter,
     int maximumNumberOfTrackedImages,
     this.debug,
+    Map<String, ARKitGltfNode>? modelsConfig,
   ) {
     _channel = MethodChannel('arkit_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
@@ -254,6 +261,7 @@ class ARKitController {
       'forceUserTapOnCenter': forceUserTapOnCenter,
       'worldAlignment': worldAlignment.index,
       'maximumNumberOfTrackedImages': maximumNumberOfTrackedImages,
+      'modelsConfig': modelsConfig?.map((key, value) => MapEntry(key, value.toJsonString())),
     });
   }
 

@@ -2,6 +2,8 @@ import ARKit
 
 extension FlutterArkitView {
     func initalize(_ arguments: [String: Any], _: FlutterResult) {
+        self.arguments = arguments
+
         if let showStatistics = arguments["showStatistics"] as? Bool {
             sceneView.showsStatistics = showStatistics
         }

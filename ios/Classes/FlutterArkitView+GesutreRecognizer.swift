@@ -45,6 +45,17 @@ extension FlutterArkitView: UIGestureRecognizerDelegate {
         }
         let touchLocation = forceTapOnCenter ? self.sceneView.center : recognizer.location(in: sceneView)
         let hitResults = sceneView.hitTest(touchLocation, options: nil)
+        if let hitResult = hitResults.first {
+            let tappedNode = hitResult.node
+            let parentNode = tappedNode.parent
+
+            // Send the node name to Flutter
+            if let nodeName = tappedNode.name {
+                sendToFlutter("onNodeTap", arguments: ["{\"nodeName\": \"\(nodeName)\", \"parentNodeName\": \"\(parentNode?.name ?? "")\"}"])
+            }
+        }
+
+        /*
         let results: [String] = hitResults.compactMap { $0.node.name }
         if results.count != 0 {
             sendToFlutter("onNodeTap", arguments: results)
@@ -54,6 +65,7 @@ extension FlutterArkitView: UIGestureRecognizerDelegate {
         if arHitResults.count != 0 {
             sendToFlutter("onARTap", arguments: arHitResults)
         }
+         */
     }
 
     @objc func handlePinch(_ recognizer: UIPinchGestureRecognizer) {
