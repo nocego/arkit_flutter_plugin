@@ -86,7 +86,7 @@ extension FlutterArkitView: ARSCNViewDelegate {
                                 }
                             }
                         } else {
-                            print("Model config not found for key 'nils_saas-grund_theater_erlebnisbank'")
+                            print("Model config not found for key \(imageName)")
                         }
                     }
 
