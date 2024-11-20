@@ -59,46 +59,31 @@ extension FlutterArkitView: ARSCNViewDelegate {
 
                     if let imageName = imageAnchor.referenceImage.name {
                         if let modelConfigData = modelsConfig[imageName] {
-                            //print("Model config: \(modelConfigData)")
-                            //print(modelConfigData)
-
-                            if let modelConfigData = modelsConfig[imageName] as? String {
+                            if let modelConfigDataArray = modelConfigData as? [String] {
+                                let jsonArrayString = "[\(modelConfigDataArray.joined(separator: ","))]"
+                                let jsonData = jsonArrayString.data(using: .utf8)!
                                 do {
-                                    let jsonData = modelConfigData.data(using: .utf8)!
-                                    if let modelConfigDict = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
+                                    if let jsonArray = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [[String: Any]] {
+                                        for item in jsonArray {
+                                            let orderedModelConfigData: [String: Any] = [
+                                                "dartType": item["dartType"] as! String,
+                                                "name": item["name"] as! String,
+                                                "isHidden": item["isHidden"] as! Int,
+                                                "renderingOrder": item["renderingOrder"] as! Int,
+                                                "assetType": item["assetType"] as! Int,
+                                                "url": item["url"] as! String
+                                            ]
+                                            let nodeToAdd = createNode(nil, fromDict: orderedModelConfigData, forDevice: sceneView.device, channel: channel)
 
-                                        //print("modelConfigDict: \(modelConfigDict)")
-
-                                        // Create a new dictionary with the desired key order
-                                        let orderedModelConfigData: [String: Any] = [
-                                            "dartType": modelConfigDict["dartType"] as! String,
-                                            "name": modelConfigDict["name"] as! String,
-                                            "isHidden": modelConfigDict["isHidden"] as! Int,
-                                            "renderingOrder": modelConfigDict["renderingOrder"] as! Int,
-                                            "assetType": modelConfigDict["assetType"] as! Int,
-                                            "url": modelConfigDict["url"] as! String
-                                        ]
-
-
-                                        //print("orderedModelConfigData: \(orderedModelConfigData)")
-
-                                        let nodeToAdd = createNode(nil, fromDict: orderedModelConfigData, forDevice: sceneView.device, channel: channel)
-                                        nodeToAdd.position.x += (modelConfigDict["relativePositionX"] as! NSNumber).floatValue
-                                        nodeToAdd.position.y += (modelConfigDict["relativePositionY"] as! NSNumber).floatValue
-                                        nodeToAdd.position.z += (modelConfigDict["relativePositionZ"] as! NSNumber).floatValue
-                                        //print("node: \(node)")
-                                        node.addChildNode(nodeToAdd)
+                                            nodeToAdd.position.x += (item["relativePositionX"] as! NSNumber).floatValue
+                                            nodeToAdd.position.y += (item["relativePositionY"] as! NSNumber).floatValue
+                                            nodeToAdd.position.z += (item["relativePositionZ"] as! NSNumber).floatValue
+                                            node.addChildNode(nodeToAdd)
+                                        }
                                     }
-                                    //print("URL: \(modelConfig.url)")
-                                    //let geometryArguments = nil
-                                    //let geometry = createGeometry(nil, withDevice: sceneView.device)
-                                    //let node = createNode(geometry, fromDict: modelConfig, forDevice: sceneView.device, channel: channel)
-                                    //print("node: \(node)")
                                 } catch {
-                                    print("Failed to decode modelConfig: \(error)")
+                                    print("Failed to decode JSON data: \(error)")
                                 }
-                            } else {
-                                print("modelConfigData is not a valid string")
                             }
                         } else {
                             print("Model config not found for key 'nils_saas-grund_theater_erlebnisbank'")

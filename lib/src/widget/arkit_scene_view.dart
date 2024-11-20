@@ -165,7 +165,7 @@ class ARKitSceneView extends StatefulWidget {
   /// The default is false;
   final bool debug;
 
-  final Map<String, ARKitGltfNode>? modelsConfig;
+  final Map<String, List<ARKitGltfNode>>? modelsConfig;
 
   @override
   State<ARKitSceneView> createState() => _ARKitSceneViewState();
@@ -238,7 +238,7 @@ class ARKitController {
     bool forceUserTapOnCenter,
     int maximumNumberOfTrackedImages,
     this.debug,
-    Map<String, ARKitGltfNode>? modelsConfig,
+    Map<String, List<ARKitGltfNode>>? modelsConfig,
   ) {
     _channel = MethodChannel('arkit_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
@@ -261,7 +261,7 @@ class ARKitController {
       'forceUserTapOnCenter': forceUserTapOnCenter,
       'worldAlignment': worldAlignment.index,
       'maximumNumberOfTrackedImages': maximumNumberOfTrackedImages,
-      'modelsConfig': modelsConfig?.map((key, value) => MapEntry(key, value.toJsonString())),
+      'modelsConfig': modelsConfig?.map((key, value) => MapEntry(key, value.map((e) => e.toJsonString()).toList())),
     });
   }
 
